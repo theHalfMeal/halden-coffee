@@ -87,6 +87,16 @@ a { color: inherit; }
 .bag-count { position: absolute; top: 4px; right: 3px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--cherry); color: #fff; font-size: .68rem; font-weight: 700; display: grid; place-items: center; transform: scale(0); transition: transform .55s var(--bounce); font-variant-numeric: tabular-nums; }
 .bag-count.on { transform: scale(1); }
 .bag-count.bump { transform: scale(1.35); transition-duration: 90ms; }
+.theme-btn svg { overflow: visible; }
+.theme-btn .core { transform-origin: 12px 12px; transition: transform .7s var(--bounce); }
+.theme-btn .cut { transition: transform .7s var(--spring); }
+.theme-btn .rays { transform-origin: 12px 12px; transition: transform .7s var(--spring), opacity .3s; }
+.theme-btn[data-mode="dark"] .core { transform: scale(1.45); }
+.theme-btn[data-mode="dark"] .cut { transform: translate(-8px, 6px); }
+.theme-btn[data-mode="dark"] .rays { transform: rotate(-90deg) scale(.4); opacity: 0; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
 .shop-cta { margin-left: 4px; padding: .62rem 1rem; font-size: .86rem; }
 .bar:not(.pill):not(.solid) .shop-cta { background: #f7f6f3; color: #1a1714; }
 .menu-btn { display: none; }
@@ -362,6 +372,7 @@ footer { padding-block: clamp(4rem, 8vw, 6rem) 2rem; }
 <style>:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); } [hidden] { display: none !important; }</style>
 </head>
 <body>
+<script>try { const t = localStorage.getItem('halden-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <a class="skip" href="#main">Skip to content</a>
 
 <div class="bar-shell">
@@ -397,6 +408,13 @@ footer { padding-block: clamp(4rem, 8vw, 6rem) 2rem; }
       <button class="icon-btn" type="button" id="bagBtn" aria-label="Bag, empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 12H6.2L5 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke-linecap="round"/></svg>
         <span class="bag-count" id="bagCount" aria-hidden="true">0</span>
+      </button>
+      <button class="icon-btn theme-btn" type="button" id="themeBtn" aria-label="Switch to dark mode">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <mask id="moonMask"><rect width="24" height="24" fill="#fff"/><circle class="cut" cx="24" cy="2" r="6" fill="#000"/></mask>
+          <circle class="core" cx="12" cy="12" r="5" fill="currentColor" mask="url(#moonMask)"/>
+          <g class="rays" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 2.5v2"/><path d="M12 19.5v2"/><path d="M2.5 12h2"/><path d="M19.5 12h2"/><path d="m5.3 5.3 1.4 1.4"/><path d="m17.3 17.3 1.4 1.4"/><path d="m5.3 18.7 1.4-1.4"/><path d="m17.3 6.7 1.4-1.4"/></g>
+        </svg>
       </button>
       <a class="btn shop-cta" href="#shelf">Shop Coffee</a>
       <button class="icon-btn menu-btn" type="button" id="menuBtn" aria-expanded="false" aria-controls="sheet" aria-label="Open menu">
@@ -569,6 +587,23 @@ const today = now.getDay();
 document.querySelectorAll('#hours [data-d]').forEach((s) => { if (s.dataset.d.split(',').map(Number).includes(today)) s.classList.add('today'); });
 document.getElementById('sheetHours').textContent = today === 0 || today === 6 ? 'Open today 8–16' : 'Open today 7–18';
 document.querySelectorAll('[data-price]').forEach((s) => (s.textContent = usd.format(+s.dataset.price)));
+
+/* ---------- Light / dark toggle: remembers the choice, otherwise follows the device ---------- */
+const root = document.documentElement, darkMQ = matchMedia('(prefers-color-scheme: dark)'), themeBtn = document.getElementById('themeBtn');
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+const effTheme = () => root.dataset.theme || (darkMQ.matches ? 'dark' : 'light');
+function paintTheme() { const t = effTheme(); themeBtn.dataset.mode = t; themeBtn.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'); themeBtn.setAttribute('aria-pressed', t === 'dark'); themeMeta && themeMeta.setAttribute('content', t === 'dark' ? '#12100e' : '#ecebe7'); }
+themeBtn.addEventListener('click', () => {
+  const next = effTheme() === 'dark' ? 'light' : 'dark';
+  const apply = () => { root.dataset.theme = next; try { localStorage.setItem('halden-theme', next); } catch (e) {} paintTheme(); };
+  if (!document.startViewTransition || REDUCE) { apply(); return; }
+  const r = themeBtn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const rad = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
+  const vt = document.startViewTransition(apply);
+  vt.ready.then(() => root.animate({ clipPath: [`circle(0px at ${cx}px ${cy}px)`, `circle(${rad}px at ${cx}px ${cy}px)`] }, { duration: 750, easing: 'cubic-bezier(.22, 1, .36, 1)', pseudoElement: '::view-transition-new(root)' })).catch(() => {});
+});
+darkMQ.addEventListener('change', paintTheme);
+paintTheme();
 
 /* ---------- Top bar: transparent over the hero, then a floating glass pill ---------- */
 const bar = document.getElementById('bar'), hero = document.getElementById('top');
