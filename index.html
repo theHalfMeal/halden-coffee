@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Halden Coffee Roasters</title>
-<meta name="theme-color" content="#ecebe7">
+<meta name="theme-color" content="#12100e">
 <meta name="description" content="Small-lot coffee roasted every Tuesday in Portland's Pearl District. Shop this week's coffees or visit the café.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap">
@@ -372,7 +372,7 @@ footer { padding-block: clamp(4rem, 8vw, 6rem) 2rem; }
 <style>:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); } [hidden] { display: none !important; }</style>
 </head>
 <body>
-<script>try { const t = localStorage.getItem('halden-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script>(() => { let t = null; try { t = localStorage.getItem('halden-theme'); } catch (e) {} document.documentElement.dataset.theme = t === 'light' ? 'light' : 'dark'; })();</script>
 <a class="skip" href="#main">Skip to content</a>
 
 <div class="bar-shell">
@@ -588,10 +588,10 @@ document.querySelectorAll('#hours [data-d]').forEach((s) => { if (s.dataset.d.sp
 document.getElementById('sheetHours').textContent = today === 0 || today === 6 ? 'Open today 8–16' : 'Open today 7–18';
 document.querySelectorAll('[data-price]').forEach((s) => (s.textContent = usd.format(+s.dataset.price)));
 
-/* ---------- Light / dark toggle: remembers the choice, otherwise follows the device ---------- */
+/* ---------- Light / dark toggle: dark by default, remembers the visitor's choice ---------- */
 const root = document.documentElement, darkMQ = matchMedia('(prefers-color-scheme: dark)'), themeBtn = document.getElementById('themeBtn');
 const themeMeta = document.querySelector('meta[name="theme-color"]');
-const effTheme = () => root.dataset.theme || (darkMQ.matches ? 'dark' : 'light');
+const effTheme = () => root.dataset.theme || 'dark';
 function paintTheme() { const t = effTheme(); themeBtn.dataset.mode = t; themeBtn.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'); themeBtn.setAttribute('aria-pressed', t === 'dark'); themeMeta && themeMeta.setAttribute('content', t === 'dark' ? '#12100e' : '#ecebe7'); }
 themeBtn.addEventListener('click', () => {
   const next = effTheme() === 'dark' ? 'light' : 'dark';
