@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Halden Coffee Roasters</title>
+<meta name="theme-color" content="#ecebe7">
+<meta name="description" content="Small-lot coffee roasted every Tuesday in Portland's Pearl District. Shop this week's coffees or visit the café.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: photo-led roastery site. Glass top bar that becomes a floating pill; full-bleed hero; pinned farm-to-cup story; draggable shelf; roast dial; café; subscription; footer. */
+:root {
+  --bg: #ecebe7;          /* oat */
+  --surface: #f7f6f3;
+  --ink: #1a1714;
+  --muted: #6a645d;
+  --line: rgba(26, 23, 20, .12);
+  --cherry: #8c1d18;      /* ripe coffee cherry */
+  --leaf: #2f4a35;
+  --glass: rgba(247, 246, 243, .72);
+  --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --sans: "Inter Tight", -apple-system, system-ui, sans-serif;
+  --spring: linear(0, 0.049, 0.154, 0.28, 0.404, 0.517, 0.615, 0.697, 0.763, 0.817, 0.86, 0.893, 0.918, 0.938, 0.954, 0.965, 0.974, 0.98, 0.985, 0.989, 0.992, 0.994, 0.996, 0.998, 0.999, 1);
+  --bounce: linear(0, 0.052, 0.166, 0.31, 0.453, 0.588, 0.7, 0.794, 0.865, 0.919, 0.957, 0.983, 0.999, 1.009, 1.013, 1.015, 1.014, 1.013, 1.011, 1.008, 1.006, 1.005, 1.003, 1.002, 1.001, 1);
+  --wrap: 78rem;
+  --gut: max(20px, env(safe-area-inset-left, 0px));
+  --gutR: max(20px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #12100e; --surface: #1b1815; --ink: #efebe5; --muted: #a59d94; --line: rgba(239,235,229,.13); --cherry: #d4574e; --leaf: #8fb497; --glass: rgba(27,24,21,.72); color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #12100e; --surface: #1b1815; --ink: #efebe5; --muted: #a59d94; --line: rgba(239,235,229,.13); --cherry: #d4574e; --leaf: #8fb497; --glass: rgba(27,24,21,.72); color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.55 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+img { display: block; max-width: 100%; }
+h1, h2, h3 { margin: 0; font-weight: 400; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+button { font: inherit; color: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+a { color: inherit; }
+.wrap { max-width: var(--wrap); margin: 0 auto; padding-left: var(--gut); padding-right: var(--gutR); }
+:focus-visible { outline: 2px solid var(--cherry); outline-offset: 3px; border-radius: 6px; }
+.skip { position: fixed; left: 12px; top: -60px; z-index: 100; background: var(--ink); color: var(--bg); padding: .6rem .9rem; border-radius: 10px; text-decoration: none; font-weight: 600; transition: top .3s var(--spring); }
+.skip:focus-visible { top: max(12px, env(safe-area-inset-top, 0px)); }
+.eyebrow { font-size: .74rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.serif { font-family: var(--serif); }
+.h2 { font-family: var(--serif); font-size: clamp(2.4rem, 5.2vw, 4.4rem); line-height: .98; letter-spacing: -0.015em; }
+.h2 em { font-style: italic; color: var(--cherry); }
+.btn { display: inline-flex; align-items: center; gap: .55rem; border: 0; border-radius: 999px; padding: .9rem 1.35rem; font-weight: 600; font-size: .95rem; text-decoration: none; cursor: pointer;
+  background: var(--ink); color: var(--bg); transition: transform .5s var(--spring), background-color .25s, box-shadow .4s var(--spring); }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -14px rgba(0,0,0,.5); }
+.btn:active { transform: scale(.97); transition-duration: 100ms; }
+.btn.light { background: #f7f6f3; color: #1a1714; }
+.btn.ghost { background: transparent; color: inherit; box-shadow: inset 0 0 0 1px currentColor; }
+.btn .arr { transition: transform .5s var(--spring); }
+.btn:hover .arr { transform: translateX(3px); }
+.link { text-decoration: none; background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size .5s var(--spring); }
+.link:hover { background-size: 100% 1px; }
+
+/* ---------- Top bar ---------- */
+.bar-shell { position: fixed; z-index: 65; left: 0; right: 0; top: 0; padding-top: env(safe-area-inset-top, 0px); pointer-events: none; }
+.bar { pointer-events: auto; position: relative; margin: 0 auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem;
+  max-width: 100%; height: 72px; padding: 0 max(28px, env(safe-area-inset-left, 0px)) 0 max(28px, env(safe-area-inset-right, 0px)); color: #f7f6f3;
+  border-radius: 0; background: transparent; box-shadow: none;
+  transition: max-width .8s var(--spring), height .6s var(--spring), margin-top .6s var(--spring), border-radius .6s var(--spring), padding .6s var(--spring), background-color .4s, color .4s, box-shadow .6s; }
+.bar::before { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; background: var(--glass); -webkit-backdrop-filter: blur(22px) saturate(170%); backdrop-filter: blur(22px) saturate(170%); opacity: 0; transition: opacity .4s; }
+.bar.pill { max-width: min(880px, calc(100% - 24px)); height: 58px; margin-top: 12px; border-radius: 999px; padding: 0 10px 0 22px; color: var(--ink);
+  box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 0 0 1px var(--line), 0 18px 40px -22px rgba(0,0,0,.45); }
+.bar.pill::before, .bar.solid::before { opacity: 1; }
+.bar.solid { color: var(--ink); }
+.logo { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; font-family: var(--serif); font-size: 1.55rem; letter-spacing: -0.01em; line-height: 1; justify-self: start; }
+.logo svg { width: 22px; height: 22px; transition: transform .8s var(--spring); }
+.logo:hover svg { transform: rotate(-20deg); }
+.nav { position: relative; display: flex; gap: 2px; align-items: center; }
+.nav-item { position: relative; z-index: 1; border: 0; background: none; cursor: pointer; text-decoration: none; padding: .55rem .95rem; border-radius: 999px; font-size: .92rem; font-weight: 500; display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap; transition: opacity .2s; }
+.nav-item svg { width: 10px; height: 10px; transition: transform .5s var(--spring); }
+.nav-item[aria-expanded="true"] svg { transform: rotate(180deg); }
+.nav-ind { position: absolute; z-index: 0; top: 50%; height: 36px; translate: 0 -50%; left: 0; width: 0; border-radius: 999px; background: currentColor; opacity: 0;
+  transition: left .55s var(--spring), width .55s var(--spring), opacity .25s; pointer-events: none; }
+.nav-ind::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.bar .nav-ind { background: rgba(255,255,255,.16); }
+.bar.pill .nav-ind, .bar.solid .nav-ind { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.tools { justify-self: end; display: flex; align-items: center; gap: 6px; }
+.icon-btn { position: relative; width: 42px; height: 42px; border-radius: 999px; border: 0; background: transparent; display: grid; place-items: center; cursor: pointer; transition: background-color .25s, transform .5s var(--spring); }
+.icon-btn:hover { background: rgba(127,127,127,.14); }
+.icon-btn:active { transform: scale(.92); transition-duration: 100ms; }
+.icon-btn svg { width: 20px; height: 20px; }
+.bag-count { position: absolute; top: 4px; right: 3px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--cherry); color: #fff; font-size: .68rem; font-weight: 700; display: grid; place-items: center; transform: scale(0); transition: transform .55s var(--bounce); font-variant-numeric: tabular-nums; }
+.bag-count.on { transform: scale(1); }
+.bag-count.bump { transform: scale(1.35); transition-duration: 90ms; }
+.shop-cta { margin-left: 4px; padding: .62rem 1rem; font-size: .86rem; }
+.bar:not(.pill):not(.solid) .shop-cta { background: #f7f6f3; color: #1a1714; }
+.menu-btn { display: none; }
+@media (max-width: 900px) { .nav { display: none; } .menu-btn { display: grid; } .bar { grid-template-columns: 1fr auto; } .shop-cta { display: none; } }
+
+/* Mega menu: materializes from the bar */
+.mega { position: absolute; left: 50%; top: calc(100% + 10px); width: min(860px, calc(100vw - 24px)); translate: -50% 0; transform-origin: 50% 0; color: var(--ink);
+  border-radius: 26px; padding: 14px; display: grid; grid-template-columns: 1fr 1.25fr; gap: 14px;
+  background: var(--glass); -webkit-backdrop-filter: blur(28px) saturate(170%); backdrop-filter: blur(28px) saturate(170%);
+  box-shadow: 0 0 0 1px var(--line), 0 40px 80px -30px rgba(0,0,0,.5);
+  opacity: 0; transform: scale(.96) translateY(-8px); filter: blur(10px); visibility: hidden; pointer-events: none;
+  transition: opacity .25s, transform .55s var(--spring), filter .35s, visibility 0s linear .55s; }
+.mega.open { opacity: 1; transform: none; filter: none; visibility: visible; pointer-events: auto; transition: opacity .25s, transform .55s var(--spring), filter .35s, visibility 0s; }
+.mega-list { display: grid; align-content: start; gap: 2px; padding: 6px; }
+.mega-list .eyebrow { padding: 6px 12px 10px; }
+.mega-link { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .2rem 1rem; text-decoration: none; padding: .75rem .9rem; border-radius: 14px; transition: background-color .25s; }
+.mega-link b { font-family: var(--serif); font-weight: 400; font-size: 1.45rem; line-height: 1.1; }
+.mega-link small { grid-column: 1; color: var(--muted); font-size: .82rem; }
+.mega-link .go { grid-row: 1 / 3; grid-column: 2; opacity: 0; transform: translateX(-6px); transition: opacity .25s, transform .5s var(--spring); }
+.mega-link:hover, .mega-link:focus-visible, .mega-link.active { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.mega-link:hover .go, .mega-link.active .go { opacity: 1; transform: none; }
+.mega-preview { position: relative; border-radius: 18px; overflow: hidden; min-height: 340px; background: #2a231e; }
+.mega-preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity .5s, transform 1.2s var(--spring); }
+.mega-preview img.on { opacity: 1; transform: scale(1); }
+.mega-preview .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px; color: #f7f6f3; background: linear-gradient(transparent, rgba(0,0,0,.6)); display: flex; justify-content: space-between; align-items: end; gap: 1rem; }
+.mega-preview .cap b { font-family: var(--serif); font-weight: 400; font-size: 1.6rem; line-height: 1; display: block; }
+.mega-preview .cap span { font-size: .82rem; opacity: .85; }
+
+/* Mobile sheet */
+.sheet { position: fixed; inset: 0; z-index: 60; background: var(--bg); padding: calc(env(safe-area-inset-top, 0px) + 84px) var(--gutR) calc(env(safe-area-inset-bottom, 0px) + 24px) var(--gut);
+  display: flex; flex-direction: column; justify-content: space-between; clip-path: inset(0 0 100% 0 round 0 0 40px 40px); visibility: hidden; transition: clip-path .7s var(--spring), visibility 0s linear .7s; overscroll-behavior: contain; }
+.sheet.open { clip-path: inset(0 0 0 0 round 0); visibility: visible; transition: clip-path .7s var(--spring), visibility 0s; }
+.sheet nav { display: grid; gap: .2rem; }
+.sheet nav a { font-family: var(--serif); font-size: clamp(2.6rem, 11vw, 3.6rem); line-height: 1.08; text-decoration: none; opacity: 0; transform: translateY(24px); transition: opacity .4s, transform .7s var(--spring); }
+.sheet.open nav a { opacity: 1; transform: none; transition-delay: calc(.12s + var(--i) * .06s); }
+.sheet .sheet-foot { display: flex; justify-content: space-between; align-items: end; gap: 1rem; color: var(--muted); font-size: .9rem; opacity: 0; transition: opacity .4s .3s; }
+.sheet.open .sheet-foot { opacity: 1; }
+.menu-btn .l1, .menu-btn .l2 { transition: transform .55s var(--spring); transform-origin: center; transform-box: fill-box; }
+.menu-btn[aria-expanded="true"] .l1 { transform: translateY(3px) rotate(45deg); }
+.menu-btn[aria-expanded="true"] .l2 { transform: translateY(-3px) rotate(-45deg); }
+body.locked { overflow: hidden; }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; min-height: 100vh; min-height: 100svh; display: grid; align-items: end; color: #f7f6f3; overflow: hidden; background: #1a1410; }
+.hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%; transform: scale(1.12); animation: heroIn 2.2s var(--spring) .1s forwards; }
+@keyframes heroIn { to { transform: scale(1.02); } }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,7,5,.55) 0%, rgba(10,7,5,.05) 30%, rgba(10,7,5,.25) 60%, rgba(10,7,5,.85) 100%); }
+.hero .wrap { position: relative; z-index: 1; width: 100%; padding-block: 0 clamp(2.5rem, 7vh, 5rem); display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; align-items: end; }
+@media (max-width: 860px) { .hero .wrap { grid-template-columns: 1fr; } }
+.hero h1 { font-family: var(--serif); font-size: clamp(3.4rem, 9vw, 8.4rem); line-height: .9; letter-spacing: -0.02em; }
+.hero h1 .ln { display: block; overflow: hidden; padding-bottom: .06em; }
+.hero h1 .ln > span { display: inline-block; transform: translateY(105%); animation: lineUp 1.3s var(--spring) forwards; animation-delay: calc(.35s + var(--i) * .12s); }
+.hero h1 em { font-style: italic; color: #f0c9a8; }
+@keyframes lineUp { to { transform: none; } }
+.hero .side { display: grid; gap: 1.4rem; justify-items: start; max-width: 28rem; opacity: 0; transform: translateY(18px); animation: fadeUp 1.2s var(--spring) .85s forwards; }
+@keyframes fadeUp { to { opacity: 1; transform: none; } }
+.hero .side p { font-size: 1.08rem; color: rgba(247,246,243,.86); }
+.hero .chip { display: inline-flex; align-items: center; gap: .6rem; font-size: .82rem; font-weight: 500; padding: .45rem .8rem .45rem .55rem; border-radius: 999px; background: rgba(247,246,243,.12); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: inset 0 0 0 1px rgba(247,246,243,.22); }
+.hero .chip i { width: 8px; height: 8px; border-radius: 50%; background: #e7a873; box-shadow: 0 0 0 4px rgba(231,168,115,.25); animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(231,168,115,0); } }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: .6rem; }
+
+/* ---------- Farm to cup (pinned story) ---------- */
+.story { position: relative; height: 340vh; background: #0f0c0a; color: #f7f6f3; }
+.story .pin { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.story .layer { position: absolute; inset: 0; overflow: hidden; will-change: clip-path; }
+.story .layer img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
+.story .layer::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,6,5,.78) 0%, rgba(8,6,5,.35) 45%, rgba(8,6,5,.1) 100%); }
+.story .copy { position: absolute; left: var(--gut); bottom: clamp(3rem, 12vh, 7rem); width: min(34rem, calc(100% - 40px)); z-index: 2; }
+.story .chap { position: absolute; left: 0; bottom: 0; width: 100%; opacity: 0; transform: translateY(30px); }
+.story .chap .eyebrow { color: rgba(247,246,243,.7); }
+.story .chap h2 { font-family: var(--serif); font-size: clamp(2.8rem, 6.5vw, 5.6rem); line-height: .95; margin-block: .6rem 1rem; }
+.story .chap h2 em { font-style: italic; color: #f0c9a8; }
+.story .chap p { font-size: 1.05rem; color: rgba(247,246,243,.85); max-width: 28rem; }
+.story .chap dl { display: flex; gap: 2rem; margin: 1.4rem 0 0; }
+.story .chap dt { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; opacity: .65; }
+.story .chap dd { margin: .2rem 0 0; font-family: var(--serif); font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.story .rail { position: absolute; z-index: 2; right: var(--gutR); top: 50%; translate: 0 -50%; display: grid; gap: 14px; }
+.story .rail span { display: grid; grid-template-columns: auto 60px; align-items: center; gap: .7rem; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; opacity: .5; transition: opacity .3s; }
+.story .rail span.on { opacity: 1; }
+.story .rail i { height: 2px; background: rgba(247,246,243,.25); border-radius: 1px; overflow: hidden; }
+.story .rail i b { display: block; height: 100%; width: 0; background: #f7f6f3; }
+@media (max-width: 700px) { .story .rail { top: auto; bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 90px); translate: none; } .story .rail span { grid-template-columns: auto 36px; } }
+
+/* ---------- Shelf (spatial browsing) ---------- */
+.shelf-sec { padding-block: clamp(5rem, 11vw, 9rem) clamp(3rem, 6vw, 5rem); overflow: hidden; }
+.sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 1.5rem; margin-bottom: clamp(2rem, 4vw, 3rem); }
+.sec-head p { color: var(--muted); max-width: 26rem; }
+.arrows { display: flex; gap: 8px; }
+.arrows button { width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; display: grid; place-items: center; transition: transform .5s var(--spring), background-color .25s; }
+.arrows button:hover { background: color-mix(in srgb, var(--ink) 7%, var(--surface)); }
+.arrows button:active { transform: scale(.92); transition-duration: 100ms; }
+.arrows svg { width: 18px; height: 18px; }
+.track-wrap { padding-left: max(var(--gut), calc((100vw - var(--wrap)) / 2 + 20px)); touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; outline: none; }
+.track-wrap.dragging { cursor: grabbing; }
+.track { display: flex; gap: clamp(14px, 1.6vw, 22px); width: max-content; padding-right: 40px; will-change: transform; position: relative; }
+.card { width: clamp(260px, 27vw, 360px); flex: none; border: 0; padding: 0; background: none; text-align: left; cursor: inherit; display: grid; gap: 1rem; color: inherit; }
+.card .stage { position: relative; aspect-ratio: 4 / 5; border-radius: 22px; overflow: hidden; display: grid; place-items: center; background: var(--tint); transition: transform .6s var(--spring), box-shadow .6s var(--spring); }
+.card:hover .stage { transform: translateY(-4px); box-shadow: 0 30px 50px -30px rgba(0,0,0,.45); }
+.card .stage::before { content: ""; position: absolute; inset: auto 12% 9% 12%; height: 18px; border-radius: 50%; background: rgba(0,0,0,.28); filter: blur(12px); }
+.card .meta { display: grid; grid-template-columns: 1fr auto; gap: .15rem 1rem; padding: 0 .2rem; }
+.card .meta b { font-family: var(--serif); font-weight: 400; font-size: 1.55rem; line-height: 1.05; }
+.card .meta .price { font-weight: 600; font-variant-numeric: tabular-nums; }
+.card .meta small { grid-column: 1 / -1; color: var(--muted); font-size: .88rem; }
+/* CSS-built coffee pouch */
+.pouch { position: relative; width: 58%; aspect-ratio: 5 / 7.4; border-radius: 10px 10px 16px 16px; background: var(--bag); transform: rotate(var(--r, -3deg)); transition: transform .8s var(--spring);
+  box-shadow: inset 10px 0 18px -10px rgba(255,255,255,.35), inset -16px 0 22px -12px rgba(0,0,0,.35), inset 0 -20px 30px -20px rgba(0,0,0,.35), 0 20px 30px -18px rgba(0,0,0,.45); }
+.card:hover .pouch { transform: rotate(0deg) translateY(-6px) scale(1.02); }
+.pouch::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 13%; border-radius: 10px 10px 0 0; background: repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 2px, transparent 2px 6px), linear-gradient(rgba(255,255,255,.18), rgba(0,0,0,.12)); }
+.pouch::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.16) 42%, transparent 52%), radial-gradient(120% 60% at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events: none; }
+.pouch .label { position: absolute; left: 12%; right: 12%; top: 26%; bottom: 14%; border-radius: 6px; background: var(--paper, #f4efe6); color: #1a1714; padding: 10% 9%; display: grid; align-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.pouch .label .brand { font-family: var(--serif); font-size: clamp(.95rem, 1.4vw, 1.2rem); line-height: 1; }
+.pouch .label .org { font-family: var(--serif); font-style: italic; font-size: clamp(1.25rem, 2vw, 1.7rem); line-height: .95; color: var(--ink2, #8c1d18); }
+.pouch .label .small { font-size: .56rem; letter-spacing: .14em; text-transform: uppercase; line-height: 1.5; opacity: .75; }
+.pouch .label .dots { display: flex; gap: 3px; }
+.pouch .label .dots i { width: 6px; height: 6px; border-radius: 50%; border: 1px solid #1a1714; }
+.pouch .label .dots i.f { background: #1a1714; }
+.pouch .valve { position: absolute; left: 50%; top: 17%; width: 11%; aspect-ratio: 1; translate: -50% 0; border-radius: 50%; background: radial-gradient(circle, rgba(0,0,0,.35) 0 30%, rgba(255,255,255,.12) 32% 60%, rgba(0,0,0,.15) 62%); }
+
+/* Product drawer */
+.scrim { position: fixed; inset: 0; z-index: 70; background: rgba(10,8,6,.45); opacity: 0; visibility: hidden; transition: opacity .4s, visibility 0s linear .4s; }
+.scrim.on { opacity: 1; visibility: visible; transition: opacity .4s, visibility 0s; }
+.drawer { position: fixed; z-index: 71; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--surface); display: flex; flex-direction: column; transform: translateX(104%);
+  transition: transform .7s var(--spring); box-shadow: -30px 0 60px -30px rgba(0,0,0,.4); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); overscroll-behavior: contain; }
+.drawer.open { transform: none; }
+@media (max-width: 640px) { .drawer { top: auto; height: 92svh; width: 100%; border-radius: 26px 26px 0 0; transform: translateY(104%); } .drawer.open { transform: translateY(var(--dy, 0px)); } }
+.drawer .grab { display: none; padding: 10px 0 2px; touch-action: none; cursor: grab; }
+.drawer .grab i { display: block; width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto; }
+@media (max-width: 640px) { .drawer .grab { display: block; } }
+.drawer .dhead { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; }
+.drawer .dbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 20px 20px; display: flex; flex-direction: column; gap: 1.4rem; }
+.drawer .dbody > * { flex: none; }
+.drawer .dhero { aspect-ratio: 16 / 11; border-radius: 20px; display: grid; place-items: center; background: var(--tint); overflow: hidden; }
+.drawer .dhero .pouch { width: 34%; }
+.drawer h3 { font-family: var(--serif); font-size: 2.6rem; line-height: 1; }
+.drawer .sub { color: var(--muted); }
+.notes { display: flex; flex-wrap: wrap; gap: .4rem; }
+.notes span { padding: .4rem .75rem; border-radius: 999px; background: color-mix(in srgb, var(--ink) 6%, transparent); font-size: .86rem; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border-radius: 14px; overflow: hidden; }
+.facts div { background: var(--surface); padding: .8rem .9rem; }
+.facts dt { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: .2rem 0 0; font-weight: 600; font-size: .92rem; }
+.seg { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 4px; border-radius: 14px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.seg button { position: relative; z-index: 1; border: 0; background: none; padding: .65rem .4rem; border-radius: 10px; font-weight: 500; font-size: .88rem; cursor: pointer; transition: color .25s; }
+.seg .thumb { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 4px; border-radius: 10px; background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: transform .55s var(--spring), width .55s var(--spring); }
+.field-label { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; display: block; }
+.dfoot { margin-top: auto; padding: 14px 20px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.dfoot .total { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.close-x { width: 40px; height: 40px; border-radius: 50%; border: 0; background: color-mix(in srgb, var(--ink) 7%, transparent); cursor: pointer; display: grid; place-items: center; transition: transform .5s var(--spring); }
+.close-x:active { transform: scale(.9); transition-duration: 100ms; }
+
+/* ---------- Roast dial (touchable) ---------- */
+.roast { padding-block: clamp(4rem, 9vw, 8rem); }
+.roast .grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; }
+@media (max-width: 860px) { .roast .grid { grid-template-columns: 1fr; } }
+.dial-wrap { position: relative; aspect-ratio: 1; max-width: 520px; width: 100%; justify-self: center; border-radius: 50%; overflow: hidden; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; outline: none; }
+.dial-wrap.dragging { cursor: grabbing; }
+.dial-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: filter .2s; }
+.dial-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dial-face { position: absolute; inset: 22%; border-radius: 50%; background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); box-shadow: 0 0 0 1px rgba(255,255,255,.25) inset, 0 20px 50px -20px rgba(0,0,0,.6); display: grid; place-items: center; text-align: center; padding: 1rem; }
+.dial-face b { font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1; display: block; }
+.dial-face small { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.dial-face .temp { font-variant-numeric: tabular-nums; font-size: .9rem; margin-top: .4rem; }
+.roast-copy { display: grid; gap: 1.2rem; }
+.roast-copy .desc { font-size: 1.15rem; min-height: 5.4em; }
+.roast-copy .match { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 18px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.roast-copy .match .swatch { width: 54px; height: 54px; border-radius: 14px; background: var(--tint); display: grid; place-items: center; flex: none; }
+.roast-copy .match .swatch .pouch { width: 52%; transform: none; }
+.roast-copy .match .swatch { overflow: hidden; }
+.roast-copy .match .swatch .label > * { display: none; }
+.roast-copy .match div { flex: 1; min-width: 0; }
+.roast-copy .match b { font-family: var(--serif); font-weight: 400; font-size: 1.3rem; display: block; line-height: 1.1; }
+.roast-copy .match small { color: var(--muted); }
+
+/* ---------- Café ---------- */
+.cafe { padding-block: clamp(4rem, 9vw, 8rem); }
+.cafe .grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(1rem, 2vw, 1.5rem); }
+@media (max-width: 860px) { .cafe .grid { grid-template-columns: 1fr; } }
+.photo { position: relative; border-radius: 24px; overflow: hidden; background: #2a231e; }
+.photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--spring); }
+.photo:hover img { transform: scale(1.03); }
+.cafe .tall { min-height: 640px; }
+.cafe .stack { display: grid; gap: clamp(1rem, 2vw, 1.5rem); grid-template-rows: auto 1fr; }
+.visit { border-radius: 24px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); padding: clamp(1.4rem, 3vw, 2.2rem); display: grid; gap: 1.4rem; }
+.visit h3 { font-family: var(--serif); font-size: clamp(2rem, 3.6vw, 2.8rem); line-height: 1; }
+.hours { display: grid; grid-template-columns: 1fr auto; gap: .55rem 1.5rem; font-variant-numeric: tabular-nums; }
+.hours .today { color: var(--cherry); font-weight: 600; }
+.menu-list { display: grid; gap: .5rem; }
+.menu-list div { display: flex; align-items: baseline; gap: .6rem; }
+.menu-list div::after { content: ""; order: 1; flex: 1; border-bottom: 1px dotted var(--line); }
+.menu-list span:last-child { order: 2; font-variant-numeric: tabular-nums; font-weight: 600; }
+.cafe .pair { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 2vw, 1.5rem); min-height: 280px; }
+
+/* ---------- Subscription ---------- */
+.sub { position: relative; color: #f7f6f3; overflow: hidden; background: #15100d; }
+.sub > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55; }
+.sub::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(14,10,8,.92) 0%, rgba(14,10,8,.6) 55%, rgba(14,10,8,.2) 100%); }
+.sub .wrap { position: relative; z-index: 1; padding-block: clamp(5rem, 11vw, 9rem); display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+@media (max-width: 860px) { .sub .wrap { grid-template-columns: 1fr; } }
+.sub .h2 em { color: #f0c9a8; }
+.sub p { color: rgba(247,246,243,.82); font-size: 1.08rem; max-width: 28rem; margin-top: 1rem; }
+.planner { border-radius: 26px; padding: 1.4rem; display: grid; gap: 1.2rem; background: rgba(247,246,243,.1); -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%); box-shadow: inset 0 0 0 1px rgba(247,246,243,.18); }
+.planner .seg { background: rgba(247,246,243,.12); }
+.planner .seg .thumb { background: #f7f6f3; }
+.planner .seg button[aria-pressed="true"] { color: #1a1714; }
+.planner .field-label { color: rgba(247,246,243,.7); }
+.planner .line { display: flex; justify-content: space-between; align-items: baseline; }
+.planner .line b { font-family: var(--serif); font-weight: 400; font-size: 2.6rem; font-variant-numeric: tabular-nums; }
+.planner input { width: 100%; padding: .9rem 1rem; border-radius: 14px; border: 0; background: rgba(247,246,243,.92); color: #1a1714; font: inherit; }
+.planner .msg { font-size: .88rem; min-height: 1.3em; color: #f0c9a8; }
+
+/* ---------- Footer ---------- */
+footer { padding-block: clamp(4rem, 8vw, 6rem) 2rem; }
+.foot-grid { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 2rem; }
+@media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr 1fr; } }
+.foot-grid h4 { margin: 0 0 .9rem; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.foot-grid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.foot-grid a { text-decoration: none; }
+.wordmark { font-family: var(--serif); font-size: clamp(5rem, 19vw, 17rem); line-height: .8; letter-spacing: -0.03em; margin-top: clamp(3rem, 6vw, 5rem); color: var(--ink); opacity: .92; white-space: nowrap; }
+.legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+
+.toast { position: fixed; z-index: 80; left: 50%; bottom: max(20px, env(safe-area-inset-bottom, 0px)); translate: -50% 0; background: var(--ink); color: var(--bg); padding: .8rem 1.1rem; border-radius: 999px; font-weight: 500; font-size: .92rem; display: flex; gap: .6rem; align-items: center;
+  transform: translateY(140%); opacity: 0; transition: transform .6s var(--spring), opacity .3s; pointer-events: none; }
+.toast.on { transform: none; opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+  .hero-img { transform: scale(1.02); }
+}
+@media (prefers-reduced-transparency: reduce) { .bar::before, .mega, .planner, .dial-face { -webkit-backdrop-filter: none; backdrop-filter: none; } .bar::before, .mega { background: var(--surface); } }
+</style>
+<style>:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); } [hidden] { display: none !important; }</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="bar-shell">
+  <header class="bar" id="bar">
+    <a class="logo" href="#top" translate="no" aria-label="Halden Coffee Roasters, home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="12" rx="6.5" ry="9" transform="rotate(30 12 12)"/><path d="M8.6 5.5c3 3 3.6 9.4 6.8 13" stroke-linecap="round"/></svg>
+      Halden
+    </a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <span class="nav-ind" id="navInd" aria-hidden="true"></span>
+      <button class="nav-item" id="coffeeBtn" type="button" aria-expanded="false" aria-controls="mega">Coffee <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+      <a class="nav-item" href="#story">Our Farms</a>
+      <a class="nav-item" href="#cafe">Café</a>
+      <a class="nav-item" href="#subscribe">Subscriptions</a>
+      <div class="mega" id="mega" role="region" aria-label="Coffee menu">
+        <div class="mega-list">
+          <div class="eyebrow">Shop coffee</div>
+          <a class="mega-link active" href="#shelf" data-img="porta" data-title="Single Origins" data-sub="4 lots on the shelf"><b>Single Origins</b><small>Washed and natural lots from four farms</small><span class="go" aria-hidden="true">→</span></a>
+          <a class="mega-link" href="#shelf" data-img="lattes" data-title="Espresso" data-sub="Tuesday Blend, roasted for milk"><b>Espresso</b><small>Built for milk drinks and home machines</small><span class="go" aria-hidden="true">→</span></a>
+          <a class="mega-link" href="#shelf" data-img="pourover" data-title="Brew Gear" data-sub="Kettles, drippers, scales"><b>Brew Gear</b><small>The tools we use behind our bar</small><span class="go" aria-hidden="true">→</span></a>
+          <a class="mega-link" href="#subscribe" data-img="flatlay" data-title="Subscriptions" data-sub="Free shipping, skip any time"><b>Subscriptions</b><small>Fresh bags every two or four weeks</small><span class="go" aria-hidden="true">→</span></a>
+        </div>
+        <div class="mega-preview" aria-hidden="true">
+          <img src="coffee/porta.jpg" alt="" class="on" data-k="porta" width="1200" height="1800">
+          <img src="coffee/lattes.jpg" alt="" data-k="lattes" width="1200" height="1800" loading="lazy">
+          <img src="coffee/pourover.jpg" alt="" data-k="pourover" width="1200" height="800" loading="lazy">
+          <img src="coffee/flatlay.jpg" alt="" data-k="flatlay" width="1200" height="1800" loading="lazy">
+          <div class="cap"><div><b id="megaTitle">Single Origins</b><span id="megaSub">4 lots on the shelf</span></div><span>Shop →</span></div>
+        </div>
+      </div>
+    </nav>
+    <div class="tools">
+      <button class="icon-btn" type="button" id="bagBtn" aria-label="Bag, empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 12H6.2L5 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke-linecap="round"/></svg>
+        <span class="bag-count" id="bagCount" aria-hidden="true">0</span>
+      </button>
+      <a class="btn shop-cta" href="#shelf">Shop Coffee</a>
+      <button class="icon-btn menu-btn" type="button" id="menuBtn" aria-expanded="false" aria-controls="sheet" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path class="l1" d="M5 9h14"/><path class="l2" d="M5 15h14"/></svg>
+      </button>
+    </div>
+  </header>
+</div>
+
+<div class="sheet" id="sheet" aria-label="Menu">
+  <nav aria-label="Mobile">
+    <a href="#shelf" style="--i:0">Coffee</a>
+    <a href="#story" style="--i:1">Our Farms</a>
+    <a href="#cafe" style="--i:2">Café</a>
+    <a href="#subscribe" style="--i:3">Subscriptions</a>
+  </nav>
+  <div class="sheet-foot"><span>NW 13th Ave, Pearl District</span><span id="sheetHours">Open today 7–6</span></div>
+</div>
+
+<main id="main">
+  <section class="hero" id="top">
+    <img class="hero-img" src="coffee/hero.jpg" alt="Espresso pouring from a portafilter into a white cup" width="2200" height="3298" fetchpriority="high">
+    <div class="wrap">
+      <h1><span class="ln"><span style="--i:0">Roasted on Tuesday.</span></span><span class="ln"><span style="--i:1"><em>In your cup</em> by Friday.</span></span></h1>
+      <div class="side">
+        <span class="chip"><i aria-hidden="true"></i><span id="nextRoast">Next roast: Tuesday</span></span>
+        <p>Small-lot coffee from four farms we visit every harvest, roasted in small batches in Portland’s Pearl District and shipped the same day.</p>
+        <div class="ctas"><a class="btn light" href="#shelf">Shop This Week’s Coffee <span class="arr" aria-hidden="true">→</span></a><a class="btn ghost" href="#cafe">Visit the Café</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story" id="story" aria-label="From farm to cup">
+    <div class="pin">
+      <div class="layer" data-k="0"><img src="coffee/origin.jpg" alt="Ripe red and green coffee cherries on the branch" width="2000" height="1500"></div>
+      <div class="layer" data-k="1"><img src="coffee/roast.jpg" alt="Freshly roasted beans being stirred in the cooling tray" width="2000" height="1334" loading="lazy"></div>
+      <div class="layer" data-k="2"><img src="coffee/brew.jpg" alt="A barista pouring steamed milk into a latte" width="2000" height="2500" loading="lazy"></div>
+      <div class="copy">
+        <div class="chap" data-k="0"><div class="eyebrow">01 · Harvest</div><h2>Picked <em>ripe,</em> one cherry at a time.</h2><p>Our four partner farms in Ethiopia, Colombia, Kenya and Guatemala hand-pick only the red cherries. We pay a price set before harvest, so the farmers know what they’ll earn.</p><dl><div><dt>Partner farms</dt><dd>4</dd></div><div><dt>Altitude</dt><dd>1,800 m</dd></div></dl></div>
+        <div class="chap" data-k="1"><div class="eyebrow">02 · Roast</div><h2>Twelve kilos <em>at a time.</em></h2><p>Every Tuesday we roast in 12&nbsp;kg batches and taste each one before it is bagged. Light enough to keep the fruit, long enough to bring out the sweetness.</p><dl><div><dt>Batch size</dt><dd>12 kg</dd></div><div><dt>Roast day</dt><dd>Tuesday</dd></div></dl></div>
+        <div class="chap" data-k="2"><div class="eyebrow">03 · Pour</div><h2>At its best <em>from day four.</em></h2><p>Coffee needs a few days to rest after roasting. Order by Tuesday and it reaches you on Friday, right when it starts tasting its best.</p><dl><div><dt>Rest</dt><dd>4–21 days</dd></div><div><dt>Ships</dt><dd>Same day</dd></div></dl></div>
+      </div>
+      <div class="rail" aria-hidden="true"><span data-k="0">Harvest <i><b></b></i></span><span data-k="1">Roast <i><b></b></i></span><span data-k="2">Pour <i><b></b></i></span></div>
+    </div>
+  </section>
+
+  <section class="shelf-sec" id="shelf" aria-label="This week's coffees">
+    <div class="wrap sec-head">
+      <div><div class="eyebrow">This week’s coffees</div><h2 class="h2" style="margin-top:.6rem">Six bags on <em>the shelf.</em></h2></div>
+      <p>Drag the shelf or use the arrows. Tap a bag for tasting notes, grind and size.</p>
+      <div class="arrows"><button type="button" id="prev" aria-label="Previous coffee"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 6 10l6 6"/></svg></button><button type="button" id="next" aria-label="Next coffee"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 4 6 6-6 6"/></svg></button></div>
+    </div>
+    <div class="track-wrap" id="trackWrap" tabindex="0" aria-label="Coffee shelf. Use the arrow keys to move, Enter to open the first visible bag.">
+      <div class="track" id="track"></div>
+    </div>
+  </section>
+
+  <section class="roast" id="roast" aria-label="Find your roast">
+    <div class="wrap grid">
+      <div class="dial-wrap" id="dial" role="slider" tabindex="0" aria-label="Roast level" aria-valuemin="1" aria-valuemax="5" aria-valuenow="2">
+        <img id="dialImg" src="coffee/beans.jpg" alt="" width="1600" height="1220" loading="lazy">
+        <svg viewBox="0 0 400 400" aria-hidden="true">
+          <g id="ticks"></g>
+          <g id="knobG"><circle cx="200" cy="34" r="14" fill="#f7f6f3"/><circle cx="200" cy="34" r="5" fill="#8c1d18"/></g>
+        </svg>
+        <div class="dial-face"><div><small>Roast level</small><b id="roastName">City</b><div class="temp" id="roastTemp">Drops at 212&nbsp;°C</div></div></div>
+      </div>
+      <div class="roast-copy">
+        <div class="eyebrow">Find your roast</div>
+        <h2 class="h2">Turn the dial. <em>Taste the difference.</em></h2>
+        <p class="desc" id="roastDesc"></p>
+        <div class="match" id="roastMatch"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cafe" id="cafe" aria-label="Visit the café">
+    <div class="wrap">
+      <div class="sec-head"><div><div class="eyebrow">The café</div><h2 class="h2" style="margin-top:.6rem">Pull up a stool <em>by the roaster.</em></h2></div><p>Our café shares a wall with the roastery. On Tuesdays you can watch the next batch drop while you drink the last one.</p></div>
+      <div class="grid">
+        <div class="photo tall"><img src="coffee/cafe1.jpg" alt="The café's seating area with tables and chairs" width="1600" height="2400" loading="lazy"></div>
+        <div class="stack">
+          <div class="visit">
+            <div><div class="eyebrow">Visit</div><h3 style="margin-top:.4rem">NW 13th Ave, Pearl District</h3></div>
+            <div class="hours" id="hours">
+              <span data-d="1,2,3,4,5">Monday – Friday</span><span data-d="1,2,3,4,5">7:00 – 18:00</span>
+              <span data-d="6,0">Saturday – Sunday</span><span data-d="6,0">8:00 – 16:00</span>
+            </div>
+            <div class="menu-list" aria-label="Bar menu">
+              <div><span>Espresso</span><span data-price="3.75"></span></div>
+              <div><span>Flat white</span><span data-price="4.75"></span></div>
+              <div><span>Filter of the day</span><span data-price="4.25"></span></div>
+            </div>
+            <div><a class="btn" href="https://www.google.com/maps/search/?api=1&query=NW+13th+Ave+Pearl+District+Portland" target="_blank" rel="noopener">Get Directions <span class="arr" aria-hidden="true">→</span></a></div>
+          </div>
+          <div class="pair">
+            <div class="photo"><img src="coffee/cafe2.jpg" alt="Espresso bar with pendant lights" width="1400" height="788" loading="lazy"></div>
+            <div class="photo"><img src="coffee/roaster.jpg" alt="Beans cooling in the roaster tray" width="1600" height="2395" loading="lazy"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sub" id="subscribe" aria-label="Subscriptions">
+    <img src="coffee/lattes.jpg" alt="" width="1200" height="1800" loading="lazy">
+    <div class="wrap">
+      <div><div class="eyebrow" style="color:rgba(247,246,243,.7)">Subscriptions</div><h2 class="h2" style="margin-top:.6rem">Never run out <em>on a Monday.</em></h2><p>Pick how often and how much. We roast your coffee on Tuesday and ship it the same day. Skip or cancel any time.</p></div>
+      <form class="planner" id="planner" novalidate>
+        <div><span class="field-label" id="freqL">Every</span><div class="seg" role="group" aria-labelledby="freqL" data-seg="freq"><span class="thumb"></span><button type="button" aria-pressed="true" data-v="2">2 weeks</button><button type="button" aria-pressed="false" data-v="4">4 weeks</button></div></div>
+        <div><span class="field-label" id="bagsL">Bags each delivery</span><div class="seg" role="group" aria-labelledby="bagsL" data-seg="bags"><span class="thumb"></span><button type="button" aria-pressed="false" data-v="1">1 bag</button><button type="button" aria-pressed="true" data-v="2">2 bags</button><button type="button" aria-pressed="false" data-v="3">3 bags</button></div></div>
+        <div class="line"><span>Per delivery, shipping included</span><b id="subPrice">$36</b></div>
+        <div><label class="field-label" for="subEmail">Email</label><input id="subEmail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="you@example.com" required></div>
+        <button class="btn light" type="submit">Start My Subscription <span class="arr" aria-hidden="true">→</span></button>
+        <p class="msg" id="subMsg" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div><a class="logo" href="#top" translate="no" style="font-size:1.8rem">Halden</a><p style="color:var(--muted);margin-top:.8rem;max-width:22rem">Coffee roasted every Tuesday in the Pearl District, Portland.</p></div>
+      <div><h4>Shop</h4><ul><li><a class="link" href="#shelf">This week’s coffees</a></li><li><a class="link" href="#subscribe">Subscriptions</a></li><li><a class="link" href="#roast">Find your roast</a></li></ul></div>
+      <div><h4>Visit</h4><ul><li><a class="link" href="#cafe">Café hours</a></li><li><a class="link" href="#story">Our farms</a></li></ul></div>
+      <div><h4>Contact</h4><ul><li><a class="link" href="mailto:hello@halden.example">hello@halden.example</a></li><li><span style="color:var(--muted)">Wholesale on request</span></li></ul></div>
+    </div>
+    <div class="wordmark" aria-hidden="true" translate="no">Halden</div>
+    <div class="legal"><span>Halden Coffee Roasters is a fictional brand made to show what your site could look like. Prices and hours are examples.</span><span>Photos: Nathan Dumlao, Andres Hernandez, Tim Mossholder, Khanh Do, Brent Gorwin, clement proust, Nafinia Putra, Mike Kenneally, Zarak Khan, Karl Fredrickson on Unsplash.</span></div>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" aria-hidden="true">
+  <div class="grab" id="grab" aria-hidden="true"><i></i></div>
+  <div class="dhead"><span class="eyebrow" id="dKind">Bag</span><button class="close-x" type="button" id="dClose" aria-label="Close"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg></button></div>
+  <div class="dbody" id="dBody"></div>
+  <div class="dfoot" id="dFoot"></div>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const usd0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const project = (v, d = 0.99) => (v / 1000) * d / (1 - d);
+const rubberband = (o, dim, c = 0.55) => (o * dim * c) / (dim + c * Math.abs(o));
+/* Apple-style spring: damping ratio + response, starts from the live value and keeps velocity */
+function spring({ from, to, velocity = 0, damping = 1, response = .45, eps = .3, onUpdate, onDone }) {
+  if (REDUCE) { onUpdate(to); onDone && onDone(); return { stop: () => ({ x: to, v: 0 }) }; }
+  const w = 2 * Math.PI / response, k = w * w, c = 2 * damping * w; let x = from, v = velocity, last = performance.now(), id;
+  const tick = (t) => { const dt = Math.min(.064, (t - last) / 1000); last = t; const n = Math.max(1, Math.ceil(dt / .004)), h = dt / n;
+    for (let i = 0; i < n; i++) { const a = -k * (x - to) - c * v; v += a * h; x += v * h; }
+    if (Math.abs(v) < eps * 10 && Math.abs(x - to) < eps) { onUpdate(to); onDone && onDone(); return; } onUpdate(x); id = requestAnimationFrame(tick); };
+  id = requestAnimationFrame(tick); return { stop() { cancelAnimationFrame(id); return { x, v }; } };
+}
+function tracker() { let h = []; return { push(x, t) { h.push({ x, t }); while (h.length > 2 && t - h[0].t > 100) h.shift(); }, velocity(now) { if (h.length < 2) return 0; const a = h[0], b = h[h.length - 1]; if (now - b.t > 60) return 0; return (b.x - a.x) / ((b.t - a.t) / 1000 || 1); }, reset() { h = []; } }; }
+
+/* ---------- Dates ---------- */
+const now = new Date();
+const daysToTue = (2 - now.getDay() + 7) % 7 || 7;
+const nextTue = new Date(now); nextTue.setDate(now.getDate() + daysToTue);
+document.getElementById('nextRoast').textContent = `Next roast: ${new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).format(nextTue)}`;
+const today = now.getDay();
+document.querySelectorAll('#hours [data-d]').forEach((s) => { if (s.dataset.d.split(',').map(Number).includes(today)) s.classList.add('today'); });
+document.getElementById('sheetHours').textContent = today === 0 || today === 6 ? 'Open today 8–16' : 'Open today 7–18';
+document.querySelectorAll('[data-price]').forEach((s) => (s.textContent = usd.format(+s.dataset.price)));
+
+/* ---------- Top bar: transparent over the hero, then a floating glass pill ---------- */
+const bar = document.getElementById('bar'), hero = document.getElementById('top');
+const onScroll = () => {
+  const y = scrollY, past = y > hero.offsetHeight - 90;
+  bar.classList.toggle('pill', y > 60 && !document.body.classList.contains('locked'));
+  bar.classList.toggle('solid', document.body.classList.contains('locked'));
+};
+addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+/* Sliding indicator follows the pointer between items */
+const nav = document.getElementById('nav'), ind = document.getElementById('navInd');
+const items = [...nav.querySelectorAll('.nav-item')];
+function moveInd(el) { if (!el) { ind.style.opacity = 0; return; } const r = el.getBoundingClientRect(), nr = nav.getBoundingClientRect(); ind.style.left = r.left - nr.left + 'px'; ind.style.width = r.width + 'px'; ind.style.opacity = 1; }
+items.forEach((it) => { it.addEventListener('pointerenter', () => moveInd(it)); it.addEventListener('focus', () => moveInd(it)); });
+nav.addEventListener('pointerleave', () => { if (!megaOpen) moveInd(null); else moveInd(coffeeBtn); });
+
+/* Mega menu */
+const coffeeBtn = document.getElementById('coffeeBtn'), mega = document.getElementById('mega');
+let megaOpen = false, closeT;
+function setMega(o) { megaOpen = o; mega.classList.toggle('open', o); coffeeBtn.setAttribute('aria-expanded', o); if (o) moveInd(coffeeBtn); }
+coffeeBtn.addEventListener('click', () => setMega(!megaOpen));
+coffeeBtn.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { clearTimeout(closeT); setMega(true); } });
+[coffeeBtn, mega].forEach((el) => { el.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') closeT = setTimeout(() => { setMega(false); moveInd(null); }, 220); }); el.addEventListener('pointerenter', () => clearTimeout(closeT)); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && megaOpen) { setMega(false); coffeeBtn.focus(); } });
+document.addEventListener('click', (e) => { if (megaOpen && !mega.contains(e.target) && e.target !== coffeeBtn && !coffeeBtn.contains(e.target)) setMega(false); });
+const megaImgs = [...mega.querySelectorAll('.mega-preview img')];
+mega.querySelectorAll('.mega-link').forEach((a) => {
+  const show = () => { mega.querySelectorAll('.mega-link').forEach((o) => o.classList.toggle('active', o === a)); megaImgs.forEach((im) => im.classList.toggle('on', im.dataset.k === a.dataset.img)); document.getElementById('megaTitle').textContent = a.dataset.title; document.getElementById('megaSub').textContent = a.dataset.sub; };
+  a.addEventListener('pointerenter', show); a.addEventListener('focus', show); a.addEventListener('click', () => setMega(false));
+});
+
+/* Mobile sheet */
+const menuBtn = document.getElementById('menuBtn'), sheet = document.getElementById('sheet');
+function setSheet(o) { sheet.classList.toggle('open', o); menuBtn.setAttribute('aria-expanded', o); menuBtn.setAttribute('aria-label', o ? 'Close menu' : 'Open menu'); document.body.classList.toggle('locked', o); onScroll(); }
+menuBtn.addEventListener('click', () => setSheet(!sheet.classList.contains('open')));
+sheet.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setSheet(false)));
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheet.classList.contains('open')) { setSheet(false); menuBtn.focus(); } });
+
+/* ---------- Farm-to-cup pinned story ---------- */
+const story = document.getElementById('story');
+const layers = [...story.querySelectorAll('.layer')], chaps = [...story.querySelectorAll('.chap')], rails = [...story.querySelectorAll('.rail span')];
+let sp = 0;
+function storyFrame() {
+  const r = story.getBoundingClientRect(), target = clamp(-r.top / (r.height - innerHeight));
+  sp = REDUCE ? target : lerp(sp, target, .14);
+  const seg = sp * 3;
+  layers.forEach((l, k) => {
+    const reveal = k === 0 ? 1 : smooth(k - .35, k + .05, seg);
+    l.style.clipPath = k === 0 ? 'none' : `inset(${((1 - reveal) * 100).toFixed(2)}% 0 0 0)`;
+    const local = clamp(seg - k + .35, 0, 1.4);
+    l.querySelector('img').style.transform = `scale(${(1.18 - .14 * Math.min(1, local)).toFixed(4)}) translateY(${((1 - Math.min(1, local)) * 4).toFixed(2)}%)`;
+  });
+  chaps.forEach((c, k) => {
+    const inO = k === 0 ? 1 : smooth(k - .15, k + .1, seg), outO = k === 2 ? 1 : 1 - smooth(k + .62, k + .82, seg), o = inO * outO;
+    c.style.opacity = o.toFixed(3); c.style.transform = `translateY(${((1 - inO) * 30 - (1 - outO) * 30).toFixed(1)}px)`; c.style.visibility = o < .01 ? 'hidden' : 'visible';
+  });
+  rails.forEach((s, k) => { const f = clamp(seg - k); s.classList.toggle('on', seg >= k && seg < k + 1 || (k === 2 && seg >= 2)); s.querySelector('b').style.width = (f * 100).toFixed(1) + '%'; });
+}
+
+/* ---------- Coffees ---------- */
+const COFFEES = [
+  { id: 'hambela', origin: 'Ethiopia', name: 'Hambela', region: 'Guji', process: 'Washed', roast: 1, price: 22, notes: ['Jasmine', 'Bergamot', 'White peach'], bag: '#d7c3a4', paper: '#fbf7ef', ink2: '#6c4a7a', tint: '#e8ddd0', altitude: '2,150 m', variety: 'Heirloom' },
+  { id: 'gatomboya', origin: 'Kenya', name: 'Gatomboya', region: 'Nyeri', process: 'Washed', roast: 2, price: 24, notes: ['Blackcurrant', 'Grapefruit', 'Cane sugar'], bag: '#3d4a3e', paper: '#f4efe6', ink2: '#8c1d18', tint: '#d6dbd3', altitude: '1,850 m', variety: 'SL28, SL34' },
+  { id: 'esperanza', origin: 'Colombia', name: 'La Esperanza', region: 'Huila', process: 'Washed', roast: 3, price: 19, notes: ['Caramel', 'Red apple', 'Cocoa'], bag: '#b8572f', paper: '#f7f1e6', ink2: '#2f4a35', tint: '#ecd9cb', altitude: '1,700 m', variety: 'Caturra' },
+  { id: 'socorro', origin: 'Guatemala', name: 'El Socorro', region: 'Palencia', process: 'Natural', roast: 3, price: 18, notes: ['Milk chocolate', 'Almond', 'Orange'], bag: '#2b3a52', paper: '#f4efe6', ink2: '#b8572f', tint: '#d5dae2', altitude: '1,750 m', variety: 'Bourbon' },
+  { id: 'tuesday', origin: 'House espresso', name: 'Tuesday Blend', region: 'Colombia & Brazil', process: 'Washed & natural', roast: 4, price: 17, notes: ['Dark chocolate', 'Molasses', 'Cherry'], bag: '#1f1a17', paper: '#f0e6d6', ink2: '#8c1d18', tint: '#d9d1c8', altitude: '1,400 m', variety: 'Blend' },
+  { id: 'decaf', origin: 'Decaf', name: 'Sugarcane Decaf', region: 'Colombia', process: 'Sugarcane EA', roast: 3, price: 18, notes: ['Brown sugar', 'Plum', 'Toffee'], bag: '#e9e3d6', paper: '#ffffff', ink2: '#2b3a52', tint: '#e4e1d9', altitude: '1,650 m', variety: 'Castillo' },
+];
+const ROASTS = ['Light', 'Medium-light', 'Medium', 'Medium-dark', 'Dark'];
+const pouchHTML = (c, r = -3) => `<div class="pouch" style="--bag:${c.bag};--paper:${c.paper};--ink2:${c.ink2};--r:${r}deg"><span class="valve"></span><div class="label"><div class="brand" translate="no">Halden</div><div><div class="small">${c.origin}</div><div class="org">${c.name}</div></div><div><div class="small">${c.process} · 250 g</div><div class="dots" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= c.roast ? 'f' : ''}"></i>`).join('')}</div></div></div></div>`;
+
+const track = document.getElementById('track'), wrap = document.getElementById('trackWrap');
+track.innerHTML = COFFEES.map((c, i) => `<button class="card" type="button" data-id="${c.id}" aria-label="${c.name}, ${c.origin}, ${usd0.format(c.price)}"><div class="stage" style="--tint:${c.tint}">${pouchHTML(c, i % 2 ? 3 : -3)}</div><div class="meta"><b>${c.name}</b><span class="price">${usd0.format(c.price)}</span><small>${c.origin} · ${c.notes.join(', ')}</small></div></button>`).join('');
+const cards = [...track.children];
+
+/* Shelf: 1:1 drag, momentum projection, snap by spring, rubber-band edges */
+let x = 0, anim = null, drag = null, moved = false, goal = 0;
+const vt = tracker();
+const snaps = () => { const max = Math.min(0, wrap.clientWidth - parseFloat(getComputedStyle(wrap).paddingLeft) - track.scrollWidth); return { pts: [...new Set(cards.map((c) => Math.max(max, -c.offsetLeft)))], min: max }; };
+const setX = (v) => { x = v; track.style.transform = `translate3d(${v}px,0,0)`; };
+const nearest = (pos) => snaps().pts.reduce((a, b) => (Math.abs(b - pos) < Math.abs(a - pos) ? b : a));
+function goTo(target, velocity, damping = 1) { let v = velocity; if (anim) { const s = anim.stop(); if (v === undefined) v = s.v; } goal = target; anim = spring({ from: x, to: target, velocity: v || 0, damping, response: .5, onUpdate: setX, onDone: () => (anim = null) }); }
+wrap.addEventListener('pointerdown', (e) => { if (e.button !== 0) return; if (anim) { anim.stop(); anim = null; } drag = { sx: e.clientX, sy: e.clientY, x0: x, live: false }; moved = false; vt.reset(); vt.push(e.clientX, e.timeStamp); });
+wrap.addEventListener('pointermove', (e) => {
+  if (!drag) return; const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+  if (!drag.live) { if (Math.abs(dx) < 8) return; if (Math.abs(dy) > Math.abs(dx)) { drag = null; return; } drag.live = true; drag.sx = e.clientX; wrap.setPointerCapture(e.pointerId); wrap.classList.add('dragging'); }
+  moved = true; vt.push(e.clientX, e.timeStamp); const { min } = snaps(); let raw = drag.x0 + (e.clientX - drag.sx);
+  if (raw > 0) raw = rubberband(raw, wrap.clientWidth); if (raw < min) raw = min - rubberband(min - raw, wrap.clientWidth); setX(raw);
+});
+function release(e) { if (!drag) return; const live = drag.live; drag = null; wrap.classList.remove('dragging'); if (!live) { if (x !== nearest(x)) goTo(nearest(x), 0); return; } const v = vt.velocity(e.timeStamp); goTo(nearest(x + project(v)), v, Math.abs(v) > 300 ? .8 : 1); }
+wrap.addEventListener('pointerup', release); wrap.addEventListener('pointercancel', release);
+wrap.addEventListener('click', (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+const step = (d) => { const { pts } = snaps(); let i = pts.indexOf(nearest(anim ? goal : x)); goTo(pts[clamp(i + d, 0, pts.length - 1)]); };
+document.getElementById('prev').addEventListener('click', () => step(-1));
+document.getElementById('next').addEventListener('click', () => step(1));
+wrap.addEventListener('keydown', (e) => { if (e.target !== wrap) return; if (e.key === 'ArrowRight') { e.preventDefault(); step(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); } if (e.key === 'Enter') { const i = snaps().pts.indexOf(nearest(x)); openCoffee(COFFEES[Math.max(0, i)].id); } });
+wrap.addEventListener('wheel', (e) => { if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; e.preventDefault(); if (anim) { anim.stop(); anim = null; } const { min } = snaps(); setX(clamp(x - e.deltaX, min, 0)); clearTimeout(wrap._w); wrap._w = setTimeout(() => goTo(nearest(x), 0), 140); }, { passive: false });
+addEventListener('resize', () => setX(clamp(x, snaps().min, 0)));
+cards.forEach((c) => c.addEventListener('click', () => openCoffee(c.dataset.id)));
+
+/* ---------- Bag and product drawer ---------- */
+const bag = [];
+const bagCount = document.getElementById('bagCount'), bagBtn = document.getElementById('bagBtn');
+const drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim'), dBody = document.getElementById('dBody'), dFoot = document.getElementById('dFoot'), dKind = document.getElementById('dKind');
+let lastFocus = null;
+function openDrawer() { lastFocus = document.activeElement; drawer.classList.add('open'); scrim.classList.add('on'); drawer.setAttribute('aria-hidden', 'false'); document.body.classList.add('locked'); document.getElementById('main').inert = true; setTimeout(() => document.getElementById('dClose').focus({ preventScroll: true }), 60); }
+function closeDrawer() { drawer.classList.remove('open'); drawer.style.removeProperty('--dy'); scrim.classList.remove('on'); drawer.setAttribute('aria-hidden', 'true'); document.body.classList.remove('locked'); document.getElementById('main').inert = false; onScroll(); lastFocus && lastFocus.focus({ preventScroll: true }); }
+document.getElementById('dClose').addEventListener('click', closeDrawer); scrim.addEventListener('click', closeDrawer);
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer(); });
+function segInit(root, onChange) {
+  const btns = [...root.querySelectorAll('button')], thumb = root.querySelector('.thumb');
+  const place = () => { const on = btns.find((b) => b.getAttribute('aria-pressed') === 'true') || btns[0]; thumb.style.width = on.offsetWidth + 'px'; thumb.style.transform = `translateX(${on.offsetLeft - 4}px)`; };
+  btns.forEach((b) => b.addEventListener('click', () => { btns.forEach((o) => o.setAttribute('aria-pressed', o === b)); place(); onChange && onChange(b.dataset.v); }));
+  requestAnimationFrame(place); new ResizeObserver(place).observe(root);
+}
+function openCoffee(id) {
+  const c = COFFEES.find((k) => k.id === id); let size = '250', grind = 'Whole bean';
+  const priceFor = () => size === '1000' ? c.price * 3.4 : c.price;
+  dKind.textContent = `${c.origin} · ${ROASTS[c.roast - 1]} roast`;
+  dBody.innerHTML = `<div class="dhero" style="--tint:${c.tint}">${pouchHTML(c, 0)}</div>
+    <div><h3 id="dTitle">${c.name}</h3><p class="sub">${c.region}, ${c.origin} · ${c.process}</p></div>
+    <div class="notes">${c.notes.map((n) => `<span>${n}</span>`).join('')}</div>
+    <dl class="facts"><div><dt>Altitude</dt><dd>${c.altitude}</dd></div><div><dt>Variety</dt><dd>${c.variety}</dd></div><div><dt>Roasted</dt><dd>Tuesday</dd></div></dl>
+    <div><span class="field-label" id="szL">Size</span><div class="seg" role="group" aria-labelledby="szL" id="segSize"><span class="thumb"></span><button type="button" aria-pressed="true" data-v="250">250 g</button><button type="button" aria-pressed="false" data-v="1000">1 kg</button></div></div>
+    <div><span class="field-label" id="grL">Grind</span><div class="seg" role="group" aria-labelledby="grL" id="segGrind"><span class="thumb"></span><button type="button" aria-pressed="true" data-v="Whole bean">Whole</button><button type="button" aria-pressed="false" data-v="Filter">Filter</button><button type="button" aria-pressed="false" data-v="Espresso">Espresso</button></div></div>`;
+  dFoot.innerHTML = `<span class="total" id="dTotal">${usd.format(priceFor())}</span><button class="btn" type="button" id="dAdd">Add to Bag <span class="arr" aria-hidden="true">→</span></button>`;
+  segInit(document.getElementById('segSize'), (v) => { size = v; document.getElementById('dTotal').textContent = usd.format(priceFor()); });
+  segInit(document.getElementById('segGrind'), (v) => { grind = v; });
+  document.getElementById('dAdd').addEventListener('click', () => { bag.push({ c, size, grind, price: priceFor() }); updateBag(); toast(`Added ${c.name}, ${size === '1000' ? '1 kg' : '250 g'}, ${grind.toLowerCase()}`); closeDrawer(); });
+  openDrawer();
+}
+function updateBag() {
+  bagCount.textContent = bag.length; bagCount.classList.toggle('on', bag.length > 0);
+  bagCount.classList.add('bump'); setTimeout(() => bagCount.classList.remove('bump'), 100);
+  bagBtn.setAttribute('aria-label', bag.length ? `Bag, ${bag.length} item${bag.length > 1 ? 's' : ''}` : 'Bag, empty');
+}
+bagBtn.addEventListener('click', () => {
+  dKind.textContent = 'Your bag';
+  const total = bag.reduce((s, b) => s + b.price, 0);
+  dBody.innerHTML = bag.length ? `<h3 id="dTitle">Your bag</h3>` + bag.map((b, i) => `<div style="display:flex;gap:1rem;align-items:center"><div class="dhero" style="--tint:${b.c.tint};width:84px;aspect-ratio:1;border-radius:16px">${pouchHTML(b.c, 0)}</div><div style="flex:1;min-width:0"><b class="serif" style="font-weight:400;font-size:1.4rem;display:block">${b.c.name}</b><small style="color:var(--muted)">${b.size === '1000' ? '1 kg' : '250 g'} · ${b.grind}</small></div><span style="font-weight:600;font-variant-numeric:tabular-nums">${usd.format(b.price)}</span></div>`).join('')
+    : `<h3 id="dTitle">Your bag is empty</h3><p class="sub">Pick a coffee from the shelf to get started.</p><a class="btn" href="#shelf" id="toShelf">Browse Coffees</a>`;
+  dFoot.innerHTML = `<span class="total">${usd.format(total)}</span><button class="btn" type="button" ${bag.length ? '' : 'disabled style="opacity:.4"'} id="checkout">Checkout</button>`;
+  const ts = document.getElementById('toShelf'); ts && ts.addEventListener('click', closeDrawer);
+  const co = document.getElementById('checkout'); co && co.addEventListener('click', () => toast('Checkout connects to your store on the live site. This demo stops here.'));
+  openDrawer();
+});
+/* Bottom-sheet drag to dismiss on phones */
+(() => { const grab = document.getElementById('grab'); let d = null; const t2 = tracker();
+  grab.addEventListener('pointerdown', (e) => { d = { y0: e.clientY }; grab.setPointerCapture(e.pointerId); drawer.style.transition = 'none'; t2.reset(); t2.push(e.clientY, e.timeStamp); });
+  grab.addEventListener('pointermove', (e) => { if (!d) return; t2.push(e.clientY, e.timeStamp); let dy = e.clientY - d.y0; if (dy < 0) dy = -rubberband(-dy, 400); drawer.style.setProperty('--dy', dy + 'px'); });
+  const end = (e) => { if (!d) return; const dy = e.clientY - d.y0, v = t2.velocity(e.timeStamp); d = null; drawer.style.transition = ''; if (dy + project(v, .998) > drawer.offsetHeight * .4) closeDrawer(); else drawer.style.setProperty('--dy', '0px'); };
+  grab.addEventListener('pointerup', end); grab.addEventListener('pointercancel', end); })();
+const toastEl = document.getElementById('toast'); let toastT;
+function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 2600); }
+
+/* ---------- Roast dial: drag to rotate, flick to spin, settles on a detent ---------- */
+const dial = document.getElementById('dial'), knob = document.getElementById('knobG'), ticks = document.getElementById('ticks'), dialImg = document.getElementById('dialImg');
+const LEVELS = [
+  { name: 'Cinnamon', temp: 196, desc: 'Barely past first crack. Tea-like and floral, with bright citrus acidity. Best as filter coffee.', filter: 'brightness(1.55) saturate(.7) sepia(.35)', match: 'hambela' },
+  { name: 'City', temp: 205, desc: 'Our most common roast for single origins. The fruit stays loud and the body starts to round out.', filter: 'brightness(1.25) saturate(.85) sepia(.2)', match: 'gatomboya' },
+  { name: 'City+', temp: 212, desc: 'Caramel sweetness takes over from acidity. Works as filter and as a gentle espresso.', filter: 'brightness(1.0) saturate(1)', match: 'esperanza' },
+  { name: 'Full City', temp: 220, desc: 'Chocolate and roasted nuts with a heavier body. Our house espresso lives here, great with milk.', filter: 'brightness(.78) saturate(1.05)', match: 'tuesday' },
+  { name: 'Vienna', temp: 228, desc: 'Second crack. Smoky, bittersweet and low in acidity. We roast this only on request.', filter: 'brightness(.55) saturate(1.1) contrast(1.1)', match: 'tuesday' },
+];
+const A0 = -120, A1 = 120, detent = (i) => A0 + (A1 - A0) * i / (LEVELS.length - 1);
+ticks.innerHTML = Array.from({ length: 41 }, (_, i) => { const a = (A0 + (A1 - A0) * i / 40) * Math.PI / 180, major = i % 10 === 0, r1 = major ? 168 : 174, r2 = 184; return `<line x1="${200 + Math.sin(a) * r1}" y1="${200 - Math.cos(a) * r1}" x2="${200 + Math.sin(a) * r2}" y2="${200 - Math.cos(a) * r2}" stroke="#f7f6f3" stroke-opacity="${major ? .95 : .5}" stroke-width="${major ? 2.5 : 1.4}" stroke-linecap="round"/>`; }).join('');
+let ang = detent(1), aAnim = null, aDrag = null, level = -1;
+const at = tracker();
+function setAng(a) {
+  ang = a; knob.setAttribute('transform', `rotate(${a.toFixed(2)} 200 200)`);
+  const f = clamp((a - A0) / (A1 - A0)) * (LEVELS.length - 1), i = Math.round(f);
+  const L0 = LEVELS[Math.floor(f)], L1 = LEVELS[Math.min(LEVELS.length - 1, Math.floor(f) + 1)];
+  dialImg.style.filter = (f - Math.floor(f)) < .5 ? L0.filter : L1.filter;
+  document.getElementById('roastTemp').innerHTML = `Drops at ${Math.round(lerp(L0.temp, L1.temp, f - Math.floor(f)))}&nbsp;°C`;
+  if (i !== level) { level = i; const L = LEVELS[i]; document.getElementById('roastName').textContent = L.name; document.getElementById('roastDesc').textContent = L.desc; dial.setAttribute('aria-valuenow', i + 1); dial.setAttribute('aria-valuetext', L.name);
+    const c = COFFEES.find((k) => k.id === L.match);
+    document.getElementById('roastMatch').innerHTML = `<div class="swatch" style="--tint:${c.tint}">${pouchHTML(c, 0)}</div><div><small>Try this week</small><b>${c.name}</b><small>${c.notes.join(', ')}</small></div><button class="btn" type="button" data-open="${c.id}">View <span class="arr" aria-hidden="true">→</span></button>`;
+    document.querySelector('#roastMatch [data-open]').addEventListener('click', (e) => openCoffee(e.currentTarget.dataset.open)); }
+}
+const angleOf = (e) => { const r = dial.getBoundingClientRect(); return Math.atan2(e.clientX - (r.left + r.width / 2), -(e.clientY - (r.top + r.height / 2))) * 180 / Math.PI; };
+const settle = (v = 0) => { const proj = ang + project(v); const f = clamp((proj - A0) / (A1 - A0)) * (LEVELS.length - 1); if (aAnim) aAnim.stop(); aAnim = spring({ from: ang, to: detent(Math.round(f)), velocity: v, damping: Math.abs(v) > 200 ? .75 : 1, response: .45, eps: .05, onUpdate: setAng, onDone: () => (aAnim = null) }); };
+dial.addEventListener('pointerdown', (e) => { if (aAnim) { aAnim.stop(); aAnim = null; } aDrag = { last: angleOf(e) }; dial.setPointerCapture(e.pointerId); dial.classList.add('dragging'); at.reset(); at.push(ang, e.timeStamp); });
+dial.addEventListener('pointermove', (e) => { if (!aDrag) return; const a = angleOf(e); let d = a - aDrag.last; if (d > 180) d -= 360; if (d < -180) d += 360; aDrag.last = a; let raw = ang + d; const lo = A0, hi = A1; if (raw < lo) raw = lo - rubberband(lo - raw, 90) * .4 ; if (raw > hi) raw = hi + rubberband(raw - hi, 90) * .4; setAng(Math.max(lo - 20, Math.min(hi + 20, raw))); at.push(ang, e.timeStamp); });
+const dEnd = (e) => { if (!aDrag) return; aDrag = null; dial.classList.remove('dragging'); settle(clamp(at.velocity(e.timeStamp), -900, 900)); };
+dial.addEventListener('pointerup', dEnd); dial.addEventListener('pointercancel', dEnd);
+dial.addEventListener('keydown', (e) => { const i = level; if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); if (aAnim) aAnim.stop(); aAnim = spring({ from: ang, to: detent(Math.min(LEVELS.length - 1, i + 1)), response: .4, eps: .05, onUpdate: setAng }); } if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); if (aAnim) aAnim.stop(); aAnim = spring({ from: ang, to: detent(Math.max(0, i - 1)), response: .4, eps: .05, onUpdate: setAng }); } });
+setAng(ang);
+
+/* ---------- Subscription planner ---------- */
+let freq = '2', bags = '2';
+const subPrice = document.getElementById('subPrice');
+let shownPrice = 36, pAnim = null;
+const priceNow = () => (+bags) * 18 * (freq === '2' ? 1 : 1.05);
+function updatePrice() { const to = priceNow(); if (pAnim) pAnim.stop(); pAnim = spring({ from: shownPrice, to, response: .5, eps: .05, onUpdate: (v) => { shownPrice = v; subPrice.textContent = usd0.format(Math.round(v)); } }); }
+document.querySelectorAll('.planner .seg').forEach((s) => segInit(s, (v) => { if (s.dataset.seg === 'freq') freq = v; else bags = v; updatePrice(); }));
+document.getElementById('planner').addEventListener('submit', (e) => {
+  e.preventDefault(); const em = document.getElementById('subEmail'), msg = document.getElementById('subMsg');
+  if (!/^\S+@\S+\.\S+$/.test(em.value)) { msg.textContent = 'Enter your email so we can send your delivery dates.'; em.focus(); return; }
+  msg.textContent = `On the live site this starts ${bags} bag${bags > 1 ? 's' : ''} every ${freq} weeks. This demo doesn’t charge or send anything.`;
+});
+
+/* ---------- Loop ---------- */
+function loop() { storyFrame(); requestAnimationFrame(loop); }
+loop();
+})();
+</script>
+
+</body>
+</html>
