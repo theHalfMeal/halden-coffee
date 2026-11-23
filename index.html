@@ -256,6 +256,28 @@ body.locked { overflow: hidden; }
 .bag-row .line-price { font-weight: 600; font-variant-numeric: tabular-nums; align-self: start; padding-top: .2rem; }
 .bag-sum { display: grid; gap: .4rem; padding-top: .6rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem; }
 .bag-sum div { display: flex; justify-content: space-between; }
+.bag-empty { display: grid; justify-items: center; text-align: center; gap: 1rem; padding: clamp(1.5rem, 5vh, 3rem) .5rem 1rem; }
+.empty-art { position: relative; width: 132px; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--cherry) 14%, transparent), color-mix(in srgb, var(--ink) 5%, transparent) 70%); color: var(--ink); }
+.empty-art svg { width: 64px; height: 64px; }
+.empty-art .steam { stroke-dasharray: 14; stroke-dashoffset: 14; animation: steam 2.6s var(--spring) infinite; }
+.empty-art .steam:nth-of-type(2) { animation-delay: .35s; }
+@keyframes steam { 0% { stroke-dashoffset: 14; opacity: 0; } 35% { opacity: 1; } 70% { stroke-dashoffset: 0; opacity: .9; } 100% { stroke-dashoffset: -14; opacity: 0; } }
+.bag-empty h3 { font-family: var(--serif); font-size: 2.3rem; line-height: 1; color: var(--ink); }
+.bag-empty p { color: var(--ink); opacity: .78; max-width: 22rem; font-size: 1rem; }
+.suggest { display: grid; gap: .6rem; }
+.suggest .eyebrow { margin-bottom: .2rem; }
+.sug { display: flex; align-items: center; gap: .9rem; padding: .7rem; border-radius: 18px; background: color-mix(in srgb, var(--ink) 4%, var(--surface)); box-shadow: inset 0 0 0 1px var(--line); transition: transform .5s var(--spring), box-shadow .4s; }
+.sug:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px var(--line), 0 16px 30px -22px rgba(0,0,0,.5); }
+.sug .thumb-bag { width: 58px; aspect-ratio: 1; border-radius: 14px; flex: none; display: grid; place-items: center; background: var(--tint); overflow: hidden; }
+.sug .thumb-bag .pouch { width: 46%; transform: none; }
+.sug .thumb-bag .label > * { display: none; }
+.sug div.t { flex: 1; min-width: 0; display: grid; }
+.sug div.t b { font-family: var(--serif); font-weight: 400; font-size: 1.2rem; line-height: 1.1; }
+.sug div.t small { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sug .add { border: 0; border-radius: 999px; padding: .5rem .85rem; background: var(--ink); color: var(--bg); font-weight: 600; font-size: .82rem; cursor: pointer; white-space: nowrap; transition: transform .45s var(--spring); }
+.sug .add:hover { transform: translateY(-1px); }
+.sug .add:active { transform: scale(.94); transition-duration: 100ms; }
+@media (prefers-reduced-motion: reduce) { .empty-art .steam { animation: none; stroke-dashoffset: 0; } }
 
 /* ---------- Roast dial (touchable) ---------- */
 .roast { padding-block: clamp(4rem, 9vw, 8rem); }
@@ -700,14 +722,23 @@ function renderBag(focusKey, focusAct) {
           <button type="button" class="rm" data-act="rm">Remove</button></div></div>
       <span class="line-price">${usd.format(b.price * b.qty)}</span></div>`).join('')
       + `<div class="bag-sum"><div><span>${n} item${n > 1 ? 's' : ''}</span><span>${usd.format(total)}</span></div><div><span>Shipping</span><span>${total >= 40 ? 'Free' : usd.format(6)}</span></div></div>`
-    : `<h3 id="dTitle">Your bag is empty</h3><p class="sub">Pick a coffee from the shelf to get started.</p><a class="btn" href="#shelf" id="toShelf" style="align-self:start">Browse Coffees</a>`;
-  dFoot.innerHTML = `<span class="total">${usd.format(bag.length ? total + (total >= 40 ? 0 : 6) : 0)}</span><button class="btn" type="button" ${bag.length ? '' : 'disabled style="opacity:.4"'} id="checkout">Checkout</button>`;
+    : `<div class="bag-empty">
+        <div class="empty-art" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="steam" d="M26 8c-3 4 3 6 0 10"/><path class="steam" d="M36 8c-3 4 3 6 0 10"/><path d="M14 26h34v12a14 14 0 0 1-14 14h-6a14 14 0 0 1-14-14V26Z"/><path d="M48 30h3a6 6 0 0 1 0 12h-4"/><path d="M10 56h40"/></svg></div>
+        <h3 id="dTitle">Your bag is empty</h3>
+        <p>Every coffee is roasted on Tuesday and ships the same day. Start with one of this week’s favourites.</p>
+      </div>
+      <div class="suggest"><div class="eyebrow">Popular this week</div>${['hambela', 'esperanza', 'tuesday'].map((id) => { const c = COFFEES.find((k) => k.id === id); return `<div class="sug"><div class="thumb-bag" style="--tint:${c.tint}">${pouchHTML(c, 0)}</div><div class="t"><b>${c.name}</b><small>${c.origin} · ${c.notes.slice(0, 2).join(', ')}</small></div><button type="button" class="add" data-quick="${c.id}" aria-label="Add ${c.name}, 250 grams, ${usd0.format(c.price)}">Add · ${usd0.format(c.price)}</button></div>`; }).join('')}</div>
+      <a class="btn ghost" href="#shelf" id="toShelf" style="justify-self:center;align-self:center">Browse All Coffees <span class="arr" aria-hidden="true">→</span></a>`;
+  dFoot.innerHTML = bag.length ? `<span class="total">${usd.format(total + (total >= 40 ? 0 : 6))}</span><button class="btn" type="button" id="checkout">Checkout</button>` : `<span style="color:var(--muted);font-size:.9rem">Free shipping on orders over ${usd0.format(40)}</span>`;
+  dFoot.hidden = false;
   const ts = document.getElementById('toShelf'); ts && ts.addEventListener('click', closeDrawer);
   const co = document.getElementById('checkout'); co && co.addEventListener('click', () => toast('Checkout connects to your store on the live site. This demo stops here.'));
   if (focusKey) { const row = dBody.querySelector(`[data-key="${focusKey}"]`); const btn = row && (row.querySelector(`[data-act="${focusAct}"]`) || row.querySelector('[data-act="inc"]')); (btn || document.getElementById('dClose')).focus({ preventScroll: true }); }
   else if (focusAct === 'removed') document.getElementById('dClose').focus({ preventScroll: true });
 }
 dBody.addEventListener('click', (e) => {
+  const quick = e.target.closest('[data-quick]');
+  if (quick) { const c = COFFEES.find((k) => k.id === quick.dataset.quick); addToBag(c, '250', 'Whole bean', c.price); updateBag(); renderBag(`${c.id}|250|Whole bean`, 'inc'); toast(`Added ${c.name}, 250 g, whole bean`); return; }
   const btn = e.target.closest('[data-act]'); if (!btn || dKind.textContent !== 'Your bag') return;
   const row = btn.closest('.bag-row'), item = bag.find((b) => b.key === row.dataset.key); if (!item) return;
   const act = btn.dataset.act;
