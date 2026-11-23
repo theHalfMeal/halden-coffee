@@ -237,6 +237,25 @@ body.locked { overflow: hidden; }
 .dfoot .total { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .close-x { width: 40px; height: 40px; border-radius: 50%; border: 0; background: color-mix(in srgb, var(--ink) 7%, transparent); cursor: pointer; display: grid; place-items: center; transition: transform .5s var(--spring); }
 .close-x:active { transform: scale(.9); transition-duration: 100ms; }
+.bag-row { display: flex; gap: 1rem; align-items: center; padding-block: .4rem; transition: opacity .25s, transform .45s var(--spring); }
+.bag-row.leaving { opacity: 0; transform: translateX(24px); }
+.bag-row .thumb-bag { width: 84px; aspect-ratio: 1; border-radius: 16px; flex: none; display: grid; place-items: center; background: var(--tint); overflow: hidden; }
+.bag-row .thumb-bag .pouch { width: 46%; transform: none; }
+.bag-row .thumb-bag .label > * { display: none; }
+.bag-row .info { flex: 1; min-width: 0; display: grid; gap: .45rem; }
+.bag-row .info b { font-family: var(--serif); font-weight: 400; font-size: 1.35rem; line-height: 1.05; }
+.bag-row .info small { color: var(--muted); }
+.bag-row .ctrl { display: flex; align-items: center; gap: .8rem; }
+.stepper { display: inline-flex; align-items: center; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.stepper button { width: 34px; height: 34px; border: 0; background: none; border-radius: 50%; cursor: pointer; display: grid; place-items: center; font-size: 1.1rem; line-height: 1; transition: background-color .2s, transform .45s var(--spring); }
+.stepper button:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.stepper button:active { transform: scale(.88); transition-duration: 100ms; }
+.stepper output { min-width: 1.8rem; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rm { border: 0; background: none; padding: .3rem 0; color: var(--muted); font-size: .85rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.rm:hover { color: var(--cherry); }
+.bag-row .line-price { font-weight: 600; font-variant-numeric: tabular-nums; align-self: start; padding-top: .2rem; }
+.bag-sum { display: grid; gap: .4rem; padding-top: .6rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem; }
+.bag-sum div { display: flex; justify-content: space-between; }
 
 /* ---------- Roast dial (touchable) ---------- */
 .roast { padding-block: clamp(4rem, 9vw, 8rem); }
@@ -657,24 +676,48 @@ function openCoffee(id) {
   dFoot.innerHTML = `<span class="total" id="dTotal">${usd.format(priceFor())}</span><button class="btn" type="button" id="dAdd">Add to Bag <span class="arr" aria-hidden="true">→</span></button>`;
   segInit(document.getElementById('segSize'), (v) => { size = v; document.getElementById('dTotal').textContent = usd.format(priceFor()); });
   segInit(document.getElementById('segGrind'), (v) => { grind = v; });
-  document.getElementById('dAdd').addEventListener('click', () => { bag.push({ c, size, grind, price: priceFor() }); updateBag(); toast(`Added ${c.name}, ${size === '1000' ? '1 kg' : '250 g'}, ${grind.toLowerCase()}`); closeDrawer(); });
+  document.getElementById('dAdd').addEventListener('click', () => { addToBag(c, size, grind, priceFor()); updateBag(); toast(`Added ${c.name}, ${size === '1000' ? '1 kg' : '250 g'}, ${grind.toLowerCase()}`); closeDrawer(); });
   openDrawer();
 }
+const bagQty = () => bag.reduce((s, b) => s + b.qty, 0);
+function addToBag(c, size, grind, price) { const key = `${c.id}|${size}|${grind}`; const ex = bag.find((b) => b.key === key); if (ex) ex.qty++; else bag.push({ key, c, size, grind, price, qty: 1 }); }
 function updateBag() {
-  bagCount.textContent = bag.length; bagCount.classList.toggle('on', bag.length > 0);
+  const n = bagQty();
+  bagCount.textContent = n; bagCount.classList.toggle('on', n > 0);
   bagCount.classList.add('bump'); setTimeout(() => bagCount.classList.remove('bump'), 100);
-  bagBtn.setAttribute('aria-label', bag.length ? `Bag, ${bag.length} item${bag.length > 1 ? 's' : ''}` : 'Bag, empty');
+  bagBtn.setAttribute('aria-label', n ? `Bag, ${n} item${n > 1 ? 's' : ''}` : 'Bag, empty');
 }
-bagBtn.addEventListener('click', () => {
+function renderBag(focusKey, focusAct) {
   dKind.textContent = 'Your bag';
-  const total = bag.reduce((s, b) => s + b.price, 0);
-  dBody.innerHTML = bag.length ? `<h3 id="dTitle">Your bag</h3>` + bag.map((b, i) => `<div style="display:flex;gap:1rem;align-items:center"><div class="dhero" style="--tint:${b.c.tint};width:84px;aspect-ratio:1;border-radius:16px">${pouchHTML(b.c, 0)}</div><div style="flex:1;min-width:0"><b class="serif" style="font-weight:400;font-size:1.4rem;display:block">${b.c.name}</b><small style="color:var(--muted)">${b.size === '1000' ? '1 kg' : '250 g'} · ${b.grind}</small></div><span style="font-weight:600;font-variant-numeric:tabular-nums">${usd.format(b.price)}</span></div>`).join('')
-    : `<h3 id="dTitle">Your bag is empty</h3><p class="sub">Pick a coffee from the shelf to get started.</p><a class="btn" href="#shelf" id="toShelf">Browse Coffees</a>`;
-  dFoot.innerHTML = `<span class="total">${usd.format(total)}</span><button class="btn" type="button" ${bag.length ? '' : 'disabled style="opacity:.4"'} id="checkout">Checkout</button>`;
+  const total = bag.reduce((s, b) => s + b.price * b.qty, 0), n = bagQty();
+  dBody.innerHTML = bag.length ? `<h3 id="dTitle">Your bag</h3>` + bag.map((b) => `<div class="bag-row" data-key="${b.key}">
+      <div class="thumb-bag" style="--tint:${b.c.tint}">${pouchHTML(b.c, 0)}</div>
+      <div class="info"><b>${b.c.name}</b><small>${b.size === '1000' ? '1 kg' : '250 g'} · ${b.grind} · ${usd.format(b.price)} each</small>
+        <div class="ctrl"><div class="stepper" role="group" aria-label="Quantity of ${b.c.name}">
+          <button type="button" data-act="dec" aria-label="${b.qty > 1 ? 'Decrease quantity' : 'Remove ' + b.c.name}">${b.qty > 1 ? '−' : '<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 6h12M8 6V4.5h4V6M6 6l.7 10h6.6L14 6"/></svg>'}</button>
+          <output aria-live="polite">${b.qty}</output>
+          <button type="button" data-act="inc" aria-label="Increase quantity">+</button></div>
+          <button type="button" class="rm" data-act="rm">Remove</button></div></div>
+      <span class="line-price">${usd.format(b.price * b.qty)}</span></div>`).join('')
+      + `<div class="bag-sum"><div><span>${n} item${n > 1 ? 's' : ''}</span><span>${usd.format(total)}</span></div><div><span>Shipping</span><span>${total >= 40 ? 'Free' : usd.format(6)}</span></div></div>`
+    : `<h3 id="dTitle">Your bag is empty</h3><p class="sub">Pick a coffee from the shelf to get started.</p><a class="btn" href="#shelf" id="toShelf" style="align-self:start">Browse Coffees</a>`;
+  dFoot.innerHTML = `<span class="total">${usd.format(bag.length ? total + (total >= 40 ? 0 : 6) : 0)}</span><button class="btn" type="button" ${bag.length ? '' : 'disabled style="opacity:.4"'} id="checkout">Checkout</button>`;
   const ts = document.getElementById('toShelf'); ts && ts.addEventListener('click', closeDrawer);
   const co = document.getElementById('checkout'); co && co.addEventListener('click', () => toast('Checkout connects to your store on the live site. This demo stops here.'));
-  openDrawer();
+  if (focusKey) { const row = dBody.querySelector(`[data-key="${focusKey}"]`); const btn = row && (row.querySelector(`[data-act="${focusAct}"]`) || row.querySelector('[data-act="inc"]')); (btn || document.getElementById('dClose')).focus({ preventScroll: true }); }
+  else if (focusAct === 'removed') document.getElementById('dClose').focus({ preventScroll: true });
+}
+dBody.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-act]'); if (!btn || dKind.textContent !== 'Your bag') return;
+  const row = btn.closest('.bag-row'), item = bag.find((b) => b.key === row.dataset.key); if (!item) return;
+  const act = btn.dataset.act;
+  if (act === 'inc') { item.qty++; updateBag(); renderBag(item.key, 'inc'); return; }
+  if (act === 'dec' && item.qty > 1) { item.qty--; updateBag(); renderBag(item.key, 'dec'); return; }
+  // remove: slide the row out, then drop it
+  row.classList.add('leaving');
+  setTimeout(() => { bag.splice(bag.indexOf(item), 1); updateBag(); renderBag(null, 'removed'); toast(`Removed ${item.c.name}`); }, REDUCE ? 0 : 260);
 });
+bagBtn.addEventListener('click', () => { renderBag(); openDrawer(); });
 /* Bottom-sheet drag to dismiss on phones */
 (() => { const grab = document.getElementById('grab'); let d = null; const t2 = tracker();
   grab.addEventListener('pointerdown', (e) => { d = { y0: e.clientY }; grab.setPointerCapture(e.pointerId); drawer.style.transition = 'none'; t2.reset(); t2.push(e.clientY, e.timeStamp); });
